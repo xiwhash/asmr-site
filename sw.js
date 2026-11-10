@@ -1,5 +1,5 @@
 /* Kikoeru static replica: intercept /api/* and serve local JSON. Frontend unchanged. */
-const VERSION = "v17";
+const VERSION = "v18";
 const CACHE = "kikoeru-data-" + VERSION;
 const PRELOAD = [
   "data/shared.json",
@@ -129,13 +129,14 @@ async function handleApi(u, rawPath, ev) {
 
   if (p.startsWith("/api/cover/")) {
     /* serve local cover files; buffer fully so the response has a clean end */
-    const cm = p.match(/^\/api\/cover\/(\d+)/);
+    const cm = p.match(/^\/api\/cover\/([A-Za-z0-9]+)/);
+    const coverKey = cm ? (/^rj/i.test(cm[1]) ? cm[1].toUpperCase() : cm[1]) : null;
     if (cm) {
       try {
-        let r = await fetch("data/covers/" + cm[1] + ".webp");
+        let r = await fetch("data/covers/" + coverKey + ".webp");
         let ctype = "image/webp";
         if (!r.ok) {
-          r = await fetch("data/covers/" + cm[1] + ".jpg");
+          r = await fetch("data/covers/" + coverKey + ".jpg");
           ctype = "image/jpeg";
         }
         if (r.ok) {
