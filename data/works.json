@@ -349,9 +349,9 @@
     "source_id": "RG01004256",
     "source_type": "DLSITE"
    },
-   "samCoverUrl": "https://api.asmr-200.com/api/cover/1114818.jpg?type=sam",
-   "thumbnailCoverUrl": "https://api.asmr-200.com/api/cover/1114818.jpg?type=240x240",
-   "mainCoverUrl": "https://api.asmr-200.com/api/cover/1114818.jpg?type=main",
+   "samCoverUrl": "/asmr-site/api/cover/1114818?type=sam",
+   "thumbnailCoverUrl": "/asmr-site/api/cover/1114818?type=240x240",
+   "mainCoverUrl": "/asmr-site/api/cover/1114818?type=main",
    "relatedWorks": [],
    "tagIds": [
     65,
