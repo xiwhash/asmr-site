@@ -279,7 +279,7 @@
         var wrap = doc.createElement("div");
         wrap.style.cssText = "flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;background:#fff";
         wrap.appendChild(canvas);
-        canvas.style.cssText = "width:100%;height:100%;object-fit:contain;display:block;background:#fff";
+        canvas.style.cssText = "max-width:100%;max-height:100%;display:block;background:#fff;margin:auto";
         doc.body.appendChild(wrap);
 
         // 下：控制条
@@ -289,11 +289,16 @@
 
         function fit() {
           try {
-            var w = win.innerWidth, h = win.innerHeight - BAR_H;
-            if (!w || h <= 0) return;
+            var aw = win.innerWidth, ah = win.innerHeight - BAR_H;
+            if (!aw || ah <= 0) return;
+            /* 保持 asmr.one 的 20:3 超宽条比例，在可用区域内尽可能大 */
+            var w = aw, h = Math.round(w / FONT_RATIO * LINE_RATIO);
+            if (h > ah) { h = ah; w = Math.round(h * FONT_RATIO / LINE_RATIO); }
             if (Math.abs(lastSize.w - w) < 4 && Math.abs(lastSize.h - h) < 4) return;
             lastSize = { w: w, h: h };
             makeCanvas(2 * w, 2 * h);
+            canvas.style.width = w + "px";
+            canvas.style.height = h + "px";
             draw(lastText);
             pushFrame();
           } catch (e) {}
