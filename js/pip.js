@@ -367,6 +367,14 @@
     return btn;
   }
 
+  function isPipOpen() {
+    try {
+      if (pipWin && !pipWin.closed) return true;
+      if (document.pictureInPictureElement) return true;
+    } catch (e) {}
+    return false;
+  }
+
   function sync() {
     var a = document.querySelector("audio");
     var b = ensureBtn();
@@ -377,7 +385,17 @@
       var cs = getComputedStyle(panel);
       panelVisible = cs.display !== "none" && cs.visibility !== "hidden" && cs.opacity !== "0";
     }
-    b.style.display = (playing && panelVisible && !active) ? "flex" : "none";
+    if (active && !isPipOpen()) { active = false; stopHeartbeat(); log("pip closed externally"); }
+
+    var show = !!(playing && panelVisible);
+    b.style.display = show ? "flex" : "none";
+    if (active) {
+      b.style.background = "#027be3";
+      b.style.color = "#ffffff";
+    } else {
+      b.style.background = "rgba(255,255,255,.92)";
+      b.style.color = "#027be3";
+    }
     if (playing && a) loadSubs(a.currentSrc || a.src);
     if (a && !a.dataset.pipTitle) {
       a.dataset.pipTitle = "1";
