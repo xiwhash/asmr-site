@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-<base href="/asmr-library/">
+<base href="/asmr-site/">
 <title>我的音声库</title>
 <meta charset="utf-8">
 <meta name="description" content="我的音声库 - 作品列表">
@@ -27,7 +27,7 @@
 <script>
 /* rewrite absolute /api/ requests into this sub-path */
 (function () {
-  var PREFIX = "/asmr-library";
+  var PREFIX = "/asmr-site";
   function fix(u) {
     if (typeof u === "string" && u.indexOf("/api/") === 0) return PREFIX + u;
     return u;
@@ -86,7 +86,7 @@
   if ("serviceWorker" in navigator) {
     var started = false;
     function once() { if (!started) { started = true; start(); } }
-    navigator.serviceWorker.register("/asmr-library/sw.js", { scope: "/asmr-library/" })
+    navigator.serviceWorker.register("/asmr-site/sw.js", { scope: "/asmr-site/" })
       .then(function () {
         if (navigator.serviceWorker.controller) { once(); return; }
         navigator.serviceWorker.addEventListener("controllerchange", once);
