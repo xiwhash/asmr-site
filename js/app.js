@@ -24024,7 +24024,7 @@
           return s || { x: 0, y: 0 };
         },
         routes: sn,
-        mode: "history",
+        mode: "hash",
         base: "/asmr-site/",
       });
       return t;
