@@ -182,6 +182,17 @@ async function handleApi(u, rawPath, ev) {
     return jsonResp({ tasks: [], total: 0 });
   }
 
+  /* 歌词/AI 任务接口：静态站一律返回空结构，避免前端 map 报错 */
+  if (p.indexOf("/api/lyric/") === 0) {
+    if (p.indexOf("/work-status/") > -1 || p.indexOf("/search-task") > -1) {
+      return jsonResp({ tasks: [], total: 0 });
+    }
+    return jsonResp({ success: true, tasks: [] });
+  }
+  if (p.indexOf("/api/search-task") === 0) {
+    return jsonResp({ tasks: [], total: 0 });
+  }
+
   if (p.indexOf("/api/media/fetch-lrc/") === 0) {
     const hit = await loadLrcFor(p.slice("/api/media/fetch-lrc/".length));
     return jsonResp({ lrc: hit ? hit.text : "" });
