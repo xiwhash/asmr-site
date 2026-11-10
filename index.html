@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<base href="/asmr-library/">
+<title>我的音声库</title>
+<meta charset="utf-8">
+<meta name="description" content="我的音声库 - 作品列表">
+<meta name="format-detection" content="telephone=no">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,minimum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#027be3">
+<link rel="icon" type="image/png" href="statics/app-logo-128x128.png">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/xiwhash/asmr-library@main/css/app.css">
+<style>
+#boot{position:fixed;inset:0;display:grid;place-items:center;background:#fff;z-index:99999;
+  font:14px/1.6 -apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;color:#5a6472}
+#boot .b{text-align:center}
+#boot .spin{width:34px;height:34px;margin:0 auto 14px;border:3px solid #e3e7ee;border-top-color:#027be3;border-radius:50%;
+  animation:sp .8s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+#boot .t{font-size:12.5px;color:#8a93a3}
+</style>
+</head>
+<body>
+<noscript>需要 JavaScript 才能运行。</noscript>
+<div id="boot"><div class="b"><div class="spin"></div><div>正在载入音声库…</div><div class="t">首次打开约需 10 秒，之后会很快</div></div></div>
+<div id="q-app"></div>
+<script>
+/* rewrite absolute /api/ requests into this sub-path */
+(function () {
+  var PREFIX = "/asmr-library";
+  function fix(u) {
+    if (typeof u === "string" && u.indexOf("/api/") === 0) return PREFIX + u;
+    return u;
+  }
+  var _fetch = window.fetch;
+  if (_fetch) {
+    window.fetch = function (input, init) {
+      try {
+        if (typeof input === "string") input = fix(input);
+        else if (input && input.url && input.url.indexOf("/api/") === 0) input = fix(input.url);
+      } catch (e) {}
+      return _fetch.call(this, input, init);
+    };
+  }
+  var _open = XMLHttpRequest.prototype.open;
+  XMLHttpRequest.prototype.open = function (method, url) {
+    var args = Array.prototype.slice.call(arguments);
+    args[1] = fix(url);
+    return _open.apply(this, args);
+  };
+})();
+
+(function () {
+  var CDN = "https://cdn.jsdelivr.net/gh/xiwhash/asmr-library@main/";
+  var booted = false;
+
+  function load(src, isModule) {
+    return new Promise(function (res) {
+      var s = document.createElement("script");
+      if (isModule) s.type = "module";
+      s.src = src;
+      s.onload = s.onerror = function () { res(); };
+      document.body.appendChild(s);
+    });
+  }
+
+  function start() {
+    if (booted) return;
+    booted = true;
+    load(CDN + "vendor/videojs-v10/video.js", true)
+      .then(function () { return load(CDN + "js/vendor.js"); })
+      .then(function () { return load(CDN + "js/app.js"); })
+      .then(function () {
+        var b = document.getElementById("boot");
+        if (b && document.querySelector("#q-app") && document.querySelector("#q-app").children.length) {
+          b.parentNode.removeChild(b);
+        } else {
+          setTimeout(function () {
+            var b2 = document.getElementById("boot");
+            if (b2) b2.parentNode.removeChild(b2);
+          }, 1500);
+        }
+      });
+  }
+
+  if ("serviceWorker" in navigator) {
+    var started = false;
+    function once() { if (!started) { started = true; start(); } }
+    navigator.serviceWorker.register("/asmr-library/sw.js", { scope: "/asmr-library/" })
+      .then(function () {
+        if (navigator.serviceWorker.controller) { once(); return; }
+        navigator.serviceWorker.addEventListener("controllerchange", once);
+        setTimeout(once, 2000);
+        navigator.serviceWorker.ready.then(function () {
+          if (navigator.serviceWorker.controller) once();
+        });
+      })
+      .catch(function () { once(); });
+  } else {
+    start();
+  }
+})();
+</script>
+</body>
+</html>
