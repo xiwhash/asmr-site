@@ -43,7 +43,7 @@ function jsonResp(obj, status) {
   });
 }
 
-/* sub-path aware: SW lives at /asmr-library/sw.js, strip its base first */
+/* sub-path aware: SW lives at /asmr-site/sw.js, strip its base first */
 const BASE_PATH = new URL(".", self.location.href).pathname.replace(/\/$/, "");
 
 self.addEventListener("fetch", (ev) => {
