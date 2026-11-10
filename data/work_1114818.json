@@ -1,343 +1,90 @@
 {
  "id": 1114818,
  "title": "【バイノーラル/KU100】性悪姉妹のいじわるおっぱい性教育～ボクのちんちん躾けちゃうね♪～",
- "circle_id": 1004256,
- "name": "甘堕落",
- "nsfw": true,
- "release": "2023-11-08",
- "dl_count": 3146,
- "price": 550,
- "review_count": 11,
- "rate_count": 713,
- "rate_average_2dp": 4.7,
- "rate_count_detail": [
+ "circle": {
+  "id": 1004256,
+  "name": "甘堕落"
+ },
+ "tags": [
   {
-   "review_point": 1,
-   "count": 2,
-   "ratio": 0
+   "id": null,
+   "name": "胸部/奶子"
   },
   {
-   "review_point": 2,
-   "count": 9,
-   "ratio": 1
+   "id": null,
+   "name": "乳交"
   },
   {
-   "review_point": 3,
-   "count": 36,
-   "ratio": 5
+   "id": null,
+   "name": "巨乳/爆乳"
   },
   {
-   "review_point": 4,
-   "count": 106,
-   "ratio": 14
+   "id": null,
+   "name": "色诱"
   },
   {
-   "review_point": 5,
-   "count": 560,
-   "ratio": 78
+   "id": null,
+   "name": "环绕音"
+  },
+  {
+   "id": null,
+   "name": "ASMR"
+  },
+  {
+   "id": null,
+   "name": "无本番"
+  },
+  {
+   "id": null,
+   "name": "姐姐正太"
+  },
+  {
+   "id": null,
+   "name": "乳头刺激"
   }
  ],
- "rank": [
-  {
-   "term": "day",
-   "category": "all",
-   "rank": 13,
-   "rank_date": "2023-11-09"
-  },
-  {
-   "term": "week",
-   "category": "all",
-   "rank": 35,
-   "rank_date": "2023-11-15"
-  },
-  {
-   "term": "month",
-   "category": "all",
-   "rank": 82,
-   "rank_date": "2023-12-05"
-  },
-  {
-   "term": "day",
-   "category": "voice",
-   "rank": 6,
-   "rank_date": "2023-11-08"
-  },
-  {
-   "term": "week",
-   "category": "voice",
-   "rank": 18,
-   "rank_date": "2023-11-15"
-  },
-  {
-   "term": "month",
-   "category": "voice",
-   "rank": 43,
-   "rank_date": "2023-12-05"
-  }
- ],
- "has_subtitle": false,
- "create_date": "2023-12-19",
  "vas": [
   {
-   "id": "7316d471-2ff7-5165-a786-483b36c4de9c",
+   "id": null,
    "name": "乙倉ゅい(乙倉由依)"
   },
   {
-   "id": "fcc9a08a-afcb-51c8-bad5-50c73b50e21b",
+   "id": null,
    "name": "逢坂成美"
   }
  ],
- "tags": [
-  {
-   "id": 65,
-   "i18n": {
-    "en-us": {
-     "name": "Breasts",
-     "history": []
-    },
-    "ja-jp": {
-     "name": "おっぱい"
-    },
-    "zh-cn": {
-     "name": "胸部/奶子",
-     "history": []
-    }
-   },
-   "name": "胸部/奶子",
-   "upvote": 0,
-   "downvote": 0,
-   "voteRank": 15,
-   "voteStatus": 1
-  },
-  {
-   "id": 122,
-   "i18n": {
-    "en-us": {
-     "name": "Breast Sex",
-     "history": []
-    },
-    "ja-jp": {
-     "name": "パイズリ"
-    },
-    "zh-cn": {
-     "name": "乳交",
-     "history": []
-    }
-   },
-   "name": "乳交",
-   "upvote": 0,
-   "downvote": 0,
-   "voteRank": 15,
-   "voteStatus": 1
-  },
-  {
-   "id": 182,
-   "i18n": {
-    "en-us": {
-     "name": "Big Breasts",
-     "history": []
-    },
-    "ja-jp": {
-     "name": "巨乳/爆乳"
-    },
-    "zh-cn": {
-     "name": "巨乳/爆乳"
-    }
-   },
-   "name": "巨乳/爆乳",
-   "upvote": 0,
-   "downvote": 0,
-   "voteRank": 15,
-   "voteStatus": 1
-  },
-  {
-   "id": 448,
-   "i18n": {
-    "en-us": {
-     "name": "Coquettish / Seduction"
-    },
-    "ja-jp": {
-     "name": "色仕掛け"
-    },
-    "zh-cn": {
-     "name": "色诱",
-     "history": []
-    }
-   },
-   "name": "色诱",
-   "upvote": 0,
-   "downvote": 0,
-   "voteRank": 15,
-   "voteStatus": 1
-  },
-  {
-   "id": 496,
-   "i18n": {
-    "en-us": {
-     "name": "Binaural"
-    },
-    "ja-jp": {
-     "name": "バイノーラル/ダミヘ"
-    },
-    "zh-cn": {
-     "name": "双声道立体声/人头麦",
-     "history": [
-      {
-       "name": "环绕音",
-       "deprecatedAt": 1712218463247
-      }
-     ]
-    }
-   },
-   "name": "环绕音",
-   "upvote": 0,
-   "downvote": 0,
-   "voteRank": 15,
-   "voteStatus": 1
-  },
-  {
-   "id": 497,
-   "i18n": {
-    "en-us": {
-     "name": "ASMR"
-    },
-    "ja-jp": {
-     "name": "ASMR"
-    },
-    "zh-cn": {
-     "name": "ASMR"
-    }
-   },
-   "name": "ASMR",
-   "upvote": 0,
-   "downvote": 0,
-   "voteRank": 15,
-   "voteStatus": 1
-  },
-  {
-   "id": 528,
-   "i18n": {
-    "en-us": {
-     "name": "No Penetrative Sex",
-     "history": []
-    },
-    "ja-jp": {
-     "name": "本番なし"
-    },
-    "zh-cn": {
-     "name": "无插入/无正戏",
-     "history": [
-      {
-       "name": "无本番",
-       "deprecatedAt": 1712218463244
-      }
-     ]
-    }
-   },
-   "name": "无本番",
-   "upvote": 0,
-   "downvote": 0,
-   "voteRank": 15,
-   "voteStatus": 1
-  },
-  {
-   "id": 504,
-   "i18n": {
-    "en-us": {
-     "name": "Elder Girl x Younger Boy",
-     "history": []
-    },
-    "ja-jp": {
-     "name": "おねショタ"
-    },
-    "zh-cn": {
-     "name": "姐姐×正太",
-     "history": [
-      {
-       "name": "姐姐正太",
-       "deprecatedAt": 1712218463244
-      }
-     ]
-    }
-   },
-   "name": "姐姐正太",
-   "upvote": 1,
-   "downvote": 0,
-   "voteRank": 1,
-   "voteStatus": 0
-  },
-  {
-   "id": 523,
-   "i18n": {
-    "en-us": {
-     "name": "Nipple Teasing",
-     "history": []
-    },
-    "ja-jp": {
-     "name": "乳首責め"
-    },
-    "zh-cn": {
-     "name": "乳头刺激",
-     "history": []
-    }
-   },
-   "name": "乳头刺激",
-   "upvote": 1,
-   "downvote": 0,
-   "voteRank": 1,
-   "voteStatus": 0
-  }
+ "mainCoverUrl": "/asmr-site/api/cover/1114818?type=main",
+ "samCoverUrl": "/asmr-site/api/cover/1114818?type=sam",
+ "thumbnailCoverUrl": "/asmr-site/api/cover/1114818?type=240x240",
+ "release": null,
+ "dl_count": 3146,
+ "rate_average_2dp": 4.7,
+ "rate_count": 713,
+ "price": 550,
+ "rate_count_detail": [],
+ "rank": null,
+ "memo": null,
+ "lyric_status": "NO_LRC",
+ "relatedWorks": [],
+ "tagIds": [],
+ "tagNames": [
+  "胸部/奶子",
+  "乳交",
+  "巨乳/爆乳",
+  "色诱",
+  "环绕音",
+  "ASMR",
+  "无本番",
+  "姐姐正太",
+  "乳头刺激"
  ],
- "language_editions": [
-  {
-   "lang": "JPN",
-   "label": "日本語",
-   "workno": "RJ01114818",
-   "edition_id": 34215,
-   "edition_type": "language",
-   "display_order": 1
-  },
-  {
-   "lang": "KO_KR",
-   "label": "韓国語",
-   "workno": "RJ01358632",
-   "edition_id": 34215,
-   "edition_type": "language",
-   "display_order": 9
-  }
+ "vaIds": [],
+ "vaNames": [
+  "乙倉ゅい(乙倉由依)",
+  "逢坂成美"
  ],
- "original_workno": null,
- "other_language_editions_in_db": [],
- "translation_info": {
-  "lang": null,
-  "is_child": false,
-  "is_parent": false,
-  "is_original": true,
-  "is_volunteer": false,
-  "child_worknos": [],
-  "parent_workno": null,
-  "original_workno": null,
-  "is_translation_agree": true,
-  "translation_bonus_langs": [],
-  "is_translation_bonus_child": false
- },
- "work_attributes": "RG01004256,adl,male,SOU,SND,JPN,DLP,REV,TRI,448,065,182,122,496,497,528",
- "age_category_string": "adult",
- "duration": 4390,
- "source_type": "DLSITE",
  "source_id": "RJ01114818",
- "source_url": "https://www.dlsite.com/maniax/work/=/product_id/RJ01114818.html",
- "playlist_rel_created_at": "2026-11-08 13:22:57",
- "playlist_rel_updated_at": "2026-11-08 13:22:57",
- "userRating": null,
- "review_text": null,
- "circle": {
-  "id": 1004256,
-  "name": "甘堕落",
-  "source_id": "RG01004256",
-  "source_type": "DLSITE"
- },
- "samCoverUrl": "https://api.asmr-200.com/api/cover/1114818.jpg?type=sam",
- "thumbnailCoverUrl": "https://api.asmr-200.com/api/cover/1114818.jpg?type=240x240",
- "mainCoverUrl": "https://api.asmr-200.com/api/cover/1114818.jpg?type=main"
+ "origin_id": 1114818,
+ "isTranslation": false,
+ "has_subtitle": true
 }
