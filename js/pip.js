@@ -1,29 +1,25 @@
-/* 画中画字幕 + 控制条
- * 修复点：
- *  1) PiP 窗口内加播放/暂停/上一首/下一首按钮（闭包直接操作主窗口 audio）
- *  2) 字幕始终有内容（无字幕时显示曲目名 + 播放时间）
- *  3) 窗口 480x160：上方 canvas 字幕，下方 44px 控制条
+/* 画中画字幕 —— 与参考站/Kikoeru 原生一致：
+ *  canvas(20:3 白底黑字) -> captureStream(0) -> video -> requestPictureInPicture（原生小窗）
+ *  不支持 Video PiP 时回退 Document PiP（480x120，同样只有字幕）
+ *  按钮只在播放时出现，不常驻
  */
 (function () {
   "use strict";
-  if (window.__pipSubV3) return;
-  window.__pipSubV3 = true;
+  if (window.__pipSimple) return;
+  window.__pipSimple = true;
 
-  var FONT_RATIO = 20;
-  var LINE_RATIO = 3;
-  var HEARTBEAT = 400;
-  var PIP_W = 480, PIP_H = 160, BAR_H = 44;
-
+  var FONT_RATIO = 20, LINE_RATIO = 3, HEARTBEAT = 400;
   var canvas = null, ctx = null, video = null, stream = null;
-  var pipWin = null, timer = null, active = false;
-  var subs = [], subsFor = "";
+  var docWin = null, timer = null, active = false;
+  var subs = [], subsFor = "", lastText = "";
   var btn = null;
-  var lastText = "", lastSize = { w: 0, h: 0 };
 
-  var mainWin = window;
+  function log() { try { console.log.apply(console, ["[pip]"].concat([].slice.call(arguments))); } catch (e) {} }
 
-  function log() {
-    try { console.log.apply(console, ["[pip3]"].concat([].slice.call(arguments))); } catch (e) {}
+  function fmt(t) {
+    if (!isFinite(t)) t = 0;
+    var m = Math.floor(t / 60), s = Math.floor(t % 60);
+    return (m < 10 ? "0" : "") + m + ":" + (s < 10 ? "0" : "") + s;
   }
 
   /* ---------- canvas ---------- */
@@ -40,8 +36,7 @@
 
   function draw(text) {
     if (!ctx || !canvas) return;
-    var W = canvas.width, H = canvas.height;
-    var s = W / FONT_RATIO;
+    var W = canvas.width, H = canvas.height, s = W / FONT_RATIO;
     ctx.clearRect(0, 0, W, H);
     ctx.fillStyle = "rgb(255,255,255)";
     ctx.fillRect(0, 0, W, H);
@@ -50,17 +45,16 @@
     ctx.textBaseline = "alphabetic";
     text = String(text || "").trim();
     if (!text) return;
-
     if (text.length <= 18) {
-      var mw = ctx.measureText(text).width;
-      ctx.fillText(text, (W - mw) / 2, (H - s) / 2.2 + s);
+      var w1 = ctx.measureText(text).width;
+      ctx.fillText(text, (W - w1) / 2, (H - s) / 2.2 + s);
     } else {
       var a = text.slice(0, 19), b = text.slice(19);
-      var w1 = ctx.measureText(a).width;
+      var wa = ctx.measureText(a).width;
       var y1 = (H - s) / 1.6;
-      ctx.fillText(a, (W - w1) / 2, y1);
-      var w2 = ctx.measureText(b).width;
-      ctx.fillText(b, (W - w2) / 2, y1 + s + 0.15 * s);
+      ctx.fillText(a, (W - wa) / 2, y1);
+      var wb = ctx.measureText(b).width;
+      ctx.fillText(b, (W - wb) / 2, y1 + s + 0.15 * s);
     }
     lastText = text;
   }
@@ -79,13 +73,37 @@
     draw("");
     if (!video) {
       video = document.createElement("video");
-      video.muted = true; video.playsInline = true;
+      video.muted = true;
+      video.playsInline = true;
       video.setAttribute("playsinline", "");
-      video.style.cssText = "position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0;pointer-events:none";
+      video.setAttribute("controls", "controls");   // 原生小窗里显示播放控件
+      video.style.cssText = "position:fixed;left:-9999px;top:0;width:2px;height:2px;opacity:0;pointer-events:none";
       document.body.appendChild(video);
       stream = canvas.captureStream(0);
       video.srcObject = stream;
       var p = video.play(); if (p && p.catch) p.catch(function () {});
+      video.addEventListener("enterpictureinpicture", function (ev) {
+        active = true;
+        try {
+          var pw = ev.pictureInPictureWindow;
+          pw.addEventListener("resize", function () {
+            var w = pw.width, h = pw.height;
+            if (!w || !h) return;
+            makeCanvas(2 * w, 2 * h);
+            draw(lastText);
+            pushFrame();
+          });
+        } catch (e) {}
+        log("video PiP entered");
+      });
+      video.addEventListener("leavepictureinpicture", function () {
+        active = false;
+        stopHeartbeat();
+        var d2 = defaultSize();
+        makeCanvas(d2.w, d2.h);
+        draw("");
+        log("video PiP left");
+      });
       log("prewarmed", d.w + "x" + d.h);
     }
   }
@@ -95,7 +113,7 @@
     var out = [], re = /\[(\d{1,2}):(\d{1,2})(?:[.:](\d{1,3}))?\]\s*(.*)/g, m;
     while ((m = re.exec(text))) {
       var t = parseInt(m[1], 10) * 60 + parseInt(m[2], 10) + (m[3] ? parseInt((m[3] + "00").slice(0, 3), 10) / 1000 : 0);
-      var s = (m[4] || "").trim();
+      var s = (m[4] || "").trim().replace(/^(\[\d{1,2}:\d{1,2}(?:[.:]\d{1,3})?\]\s*)+/, "");
       if (s) out.push({ t: t, text: s });
     }
     out.sort(function (a, b) { return a.t - b.t; });
@@ -105,12 +123,12 @@
   function parseVTT(text) {
     var out = [], blocks = String(text).replace(/\r/g, "").split(/\n\n+/);
     for (var i = 0; i < blocks.length; i++) {
-      var lines = blocks[i].split("\n"), idx = -1;
-      for (var j = 0; j < lines.length; j++) if (lines[j].indexOf("-->") > -1) { idx = j; break; }
-      if (idx < 0) continue;
-      var t = 0, mm = lines[idx].match(/(?:(\d+):)?(\d+):(\d+)[.,](\d+)/);
+      var ls = blocks[i].split("\n"), k = -1;
+      for (var j = 0; j < ls.length; j++) if (ls[j].indexOf("-->") > -1) { k = j; break; }
+      if (k < 0) continue;
+      var t = 0, mm = ls[k].match(/(?:(\d+):)?(\d+):(\d+)[.,](\d+)/);
       if (mm) t = (mm[1] ? +mm[1] * 3600 : 0) + +mm[2] * 60 + +mm[3] + +mm[4] / 1000;
-      var txt = lines.slice(idx + 1).join(" ").trim();
+      var txt = ls.slice(k + 1).join(" ").trim();
       if (txt) out.push({ t: t, text: txt });
     }
     out.sort(function (a, b) { return a.t - b.t; });
@@ -119,22 +137,20 @@
 
   function loadSubs(src) {
     if (!src || subsFor === src) return;
-    subsFor = src;
-    subs = [];
+    subsFor = src; subs = [];
     var m = String(src).match(/RJ(\d{5,})\/(\d{3})\.(opus|mp3|wav)/i);
     if (!m) return;
-    var rj = "RJ" + m[1].padStart(8, "0");
-    var idx = m[2];
+    var rj = "RJ" + m[1].padStart(8, "0"), idx = m[2];
     var base = location.pathname.indexOf("/asmr-site/") === 0 ? "/asmr-site/" : "/";
     var urls = [base + "data/subs/" + rj + "/" + idx + ".lrc", base + "data/subs/" + rj + "/" + idx + ".vtt"];
     (function next(i) {
-      if (i >= urls.length) { log("no subs file for", rj, idx); return; }
+      if (i >= urls.length) return;
       fetch(urls[i], { cache: "no-store" }).then(function (r) {
         if (!r.ok) throw new Error("404");
         return r.text();
       }).then(function (t) {
         subs = /\.lrc$/i.test(urls[i]) ? parseLRC(t) : parseVTT(t);
-        log("subs loaded", subs.length);
+        log("subs", subs.length);
       }).catch(function () { next(i + 1); });
     })(0);
   }
@@ -147,202 +163,96 @@
       if (subs[mid].t <= t) { best = mid; lo = mid + 1; } else { hi = mid - 1; }
     }
     if (best < 0) return "";
-    if (t - subs[best].t > 6) return "";
+    if (t - subs[best].t > 8) return "";
     return subs[best].text;
   }
 
-  /* ---------- 曲目名兜底 ---------- */
-  function trackLabel() {
+  function trackName() {
     try {
-      var a = mainWin.document.querySelector("audio");
-      var el = mainWin.document.querySelector(".audio-player .text-subtitle1, .audio-player .text-subtitle2, .playBar .ellipsis");
-      var name = (el && (el.innerText || el.textContent) || "").trim();
-      if (!name) {
-        // 从播放器里的曲目行找
-        var rows = mainWin.document.querySelectorAll(".q-item");
-        for (var i = 0; i < rows.length; i++) {
-          if (/\bplay_arrow\b|pause/.test(rows[i].className || "")) {
-            name = (rows[i].innerText || "").split("\n").filter(Boolean).pop() || "";
-            break;
-          }
-        }
-      }
-      if (name) return name;
-      if (a && a.dataset && a.dataset.title) return a.dataset.title;
-      return (mainWin.document.title || "").split("·")[0].trim();
+      var el = document.querySelector(".audio-player .text-subtitle1, .audio-player .text-subtitle2");
+      var n = (el && (el.innerText || "")).trim();
+      if (n) return n;
+      var a = document.querySelector("audio");
+      return (a && a.dataset && a.dataset.title) || (document.title || "").split("·")[0].trim();
     } catch (e) { return ""; }
   }
 
-  function fmtTime(s) {
-    if (!isFinite(s) || s < 0) s = 0;
-    var m = Math.floor(s / 60), ss = Math.floor(s % 60);
-    return m + ":" + (ss < 10 ? "0" : "") + ss;
-  }
-
-  /* ---------- 心跳 ---------- */
   function tick() {
-    var a = mainWin.document.querySelector("audio");
+    var a = document.querySelector("audio");
     if (!a) return;
     var text = lyricAt(a.currentTime);
-    if (!text) text = trackLabel() + "  " + fmtTime(a.currentTime) + " / " + (isFinite(a.duration) ? fmtTime(a.duration) : "--:--");
+    if (!text) {
+      var nm = trackName();
+      text = nm ? (nm + "  " + fmt(a.currentTime) + "/" + fmt(a.duration)) : "";
+    }
     if (text !== lastText) draw(text);
     pushFrame();
-    syncPipButtons(a);
   }
 
   function startHeartbeat() { if (timer) clearInterval(timer); timer = setInterval(tick, HEARTBEAT); tick(); }
   function stopHeartbeat() { if (timer) { clearInterval(timer); timer = null; } }
 
-  /* ---------- PiP 控制条 ---------- */
-  var pipBtns = {};
-
-  function makeBar(doc) {
-    var bar = doc.createElement("div");
-    bar.style.cssText = "height:" + BAR_H + "px;display:flex;align-items:center;justify-content:center;gap:14px;background:#f5f7fa;border-top:1px solid #e3e7ee;flex:0 0 auto;font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif";
-
-    function iconBtn(svg, label, handler) {
-      var b = doc.createElement("button");
-      b.type = "button";
-      b.title = label;
-      b.setAttribute("aria-label", label);
-      b.innerHTML = svg;
-      b.style.cssText = "width:34px;height:34px;border:none;border-radius:8px;background:transparent;color:#027be3;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0";
-      b.addEventListener("click", function (ev) { ev.stopPropagation(); handler(); });
-      bar.appendChild(b);
-      return b;
-    }
-
-    var SVG = {
-      prev: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6l8.5 6V6z"/></svg>',
-      play: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>',
-      pause: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>',
-      next: '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M16 6h2v12h-2zM6 18l8.5-6L6 6z"/></svg>',
-    };
-
-    pipBtns.prev = iconBtn(SVG.prev, "上一首", function () { clickMainIcon("skip_previous"); });
-    pipBtns.play = iconBtn(SVG.play, "播放/暂停", function () { toggleMainAudio(); });
-    pipBtns.next = iconBtn(SVG.next, "下一首", function () { clickMainIcon("skip_next"); });
-
-    return bar;
-  }
-
-  function toggleMainAudio() {
-    var a = mainWin.document.querySelector("audio");
-    if (!a) return;
-    if (a.paused) { var p = a.play(); if (p && p.catch) p.catch(function () {}); }
-    else a.pause();
-  }
-
-  function clickMainIcon(name) {
-    var doc = mainWin.document;
-    var nodes = doc.querySelectorAll(".q-btn, button");
-    for (var i = 0; i < nodes.length; i++) {
-      var el = nodes[i];
-      var ic = el.querySelector(".q-icon, i, .material-icons");
-      var txt = ((ic && (ic.innerText || ic.textContent)) || el.innerText || "").trim();
-      if (txt.indexOf(name) > -1) { el.click(); return true; }
-    }
-    // 兜底：用 audio 的相邻按钮
-    return false;
-  }
-
-  function syncPipButtons(a) {
-    if (!pipWin || !pipBtns.play) return;
-    try {
-      var want = a.paused ? "play" : "pause";
-      if (pipBtns.play.dataset.state !== want) {
-        pipBtns.play.dataset.state = want;
-        pipBtns.play.innerHTML = want === "play"
-          ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>'
-          : '<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>';
-      }
-    } catch (e) {}
-  }
-
   /* ---------- 开关 ---------- */
-  function startPip(ev) {
-    if (active) { stopPip(); return; }
-    var a = mainWin.document.querySelector("audio");
+  function openPip(ev) {
+    if (active) { closePip(); return; }
+    var a = document.querySelector("audio");
     if (!a) { log("no audio"); return; }
 
-    draw(lyricAt(a.currentTime) || trackLabel());
+    draw(lyricAt(a.currentTime) || trackName());
 
-    if (window.documentPictureInPicture && window.documentPictureInPicture.requestWindow) {
-      var req = documentPictureInPicture.requestWindow({ width: PIP_W, height: PIP_H });
-      req.then(function (win) {
-        pipWin = win;
-        var doc = win.document;
-        doc.body.style.cssText = "margin:0;padding:0;background:#fff;overflow:hidden";
-        doc.body.innerHTML = "";
+    // 1) 优先原生 Video PiP（与参考站一致）
+    try {
+      if (video && typeof video.requestPictureInPicture === "function" && document.pictureInPictureEnabled) {
+        var pr = video.play();
+        var go = function () {
+          video.requestPictureInPicture().then(function () {
+            active = true;
+            startHeartbeat();
+            log("video PiP opened");
+          }).catch(function (e) {
+            log("video PiP failed:", e.message);
+            fallbackDocPip();
+          });
+        };
+        if (pr && pr.then) pr.then(go).catch(go); else go();
+        return;
+      }
+    } catch (e) { log("video PiP err", e.message); }
 
-        // 上：canvas
-        var wrap = doc.createElement("div");
-        wrap.style.cssText = "flex:1 1 auto;min-height:0;display:flex;align-items:center;justify-content:center;background:#fff";
-        wrap.appendChild(canvas);
-        canvas.style.cssText = "max-width:100%;max-height:100%;display:block;background:#fff;margin:auto";
-        doc.body.appendChild(wrap);
+    fallbackDocPip();
 
-        // 下：控制条
-        doc.body.appendChild(makeBar(doc));
-        doc.body.style.display = "flex";
-        doc.body.style.flexDirection = "column";
-
-        function fit() {
-          try {
-            var aw = win.innerWidth, ah = win.innerHeight - BAR_H;
-            if (!aw || ah <= 0) return;
-            /* 保持 asmr.one 的 20:3 超宽条比例，在可用区域内尽可能大 */
-            var w = aw, h = Math.round(w / FONT_RATIO * LINE_RATIO);
-            if (h > ah) { h = ah; w = Math.round(h * FONT_RATIO / LINE_RATIO); }
-            if (Math.abs(lastSize.w - w) < 4 && Math.abs(lastSize.h - h) < 4) return;
-            lastSize = { w: w, h: h };
-            makeCanvas(2 * w, 2 * h);
-            canvas.style.width = w + "px";
-            canvas.style.height = h + "px";
-            draw(lastText);
-            pushFrame();
-          } catch (e) {}
-        }
-        fit();
-        win.addEventListener("resize", fit);
+    function fallbackDocPip() {
+      if (!(window.documentPictureInPicture && window.documentPictureInPicture.requestWindow)) {
+        log("no PiP support");
+        return;
+      }
+      documentPictureInPicture.requestWindow({ width: 480, height: 120 }).then(function (win) {
+        docWin = win;
+        win.document.body.style.cssText = "margin:0;padding:0;background:#fff;overflow:hidden;display:flex;align-items:center;justify-content:center";
+        win.document.body.appendChild(canvas);
+        canvas.style.cssText = "width:100%;height:100%;object-fit:contain;display:block;background:#fff";
+        active = true;
+        startHeartbeat();
         win.addEventListener("pagehide", function () {
-          active = false; pipWin = null; stopHeartbeat();
+          active = false; docWin = null; stopHeartbeat();
           try { if (canvas.parentNode !== document.body) document.body.appendChild(canvas); } catch (e) {}
           canvas.style.cssText = "position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0";
           var d = defaultSize(); makeCanvas(d.w, d.h); draw("");
-          log("pip closed");
+          log("doc PiP closed");
         });
-
-        active = true;
-        startHeartbeat();
-        log("document PiP started with controls");
+        log("document PiP opened");
       }).catch(function (e) {
         log("document PiP failed:", e.message);
-        try {
-          if (video && video.requestPictureInPicture) {
-            video.play();
-            video.requestPictureInPicture().then(function () { active = true; startHeartbeat(); log("video PiP"); })
-              .catch(function (e2) { log("video PiP failed", e2.message); });
-          }
-        } catch (e3) { log("fallback err", e3.message); }
       });
-      return;
     }
-
-    try {
-      if (video && video.requestPictureInPicture) {
-        video.play();
-        video.requestPictureInPicture().then(function () { active = true; startHeartbeat(); log("video PiP"); })
-          .catch(function (e) { log("video PiP failed", e.message); });
-      }
-    } catch (e) { log("no PiP", e.message); }
   }
 
-  function stopPip() {
-    active = false; stopHeartbeat();
-    try { if (pipWin && !pipWin.closed) pipWin.close(); } catch (e) {}
+  function closePip() {
+    active = false;
+    stopHeartbeat();
     try { if (document.pictureInPictureElement) document.exitPictureInPicture(); } catch (e) {}
-    pipWin = null;
+    try { if (docWin && !docWin.closed) docWin.close(); } catch (e) {}
+    docWin = null;
     try {
       if (canvas && canvas.parentNode !== document.body) document.body.appendChild(canvas);
       canvas.style.cssText = "position:fixed;left:-9999px;top:0;width:1px;height:1px;opacity:0";
@@ -350,11 +260,19 @@
     } catch (e) {}
   }
 
+  function pipOpen() {
+    try {
+      if (document.pictureInPictureElement) return true;
+      if (docWin && !docWin.closed) return true;
+    } catch (e) {}
+    return false;
+  }
+
   /* ---------- 按钮 ---------- */
   function ensureBtn() {
     if (btn) return btn;
     btn = document.createElement("button");
-    btn.id = "__pipSubBtn";
+    btn.id = "__pipBtn";
     btn.type = "button";
     btn.title = "画中画字幕";
     btn.setAttribute("aria-label", "画中画字幕");
@@ -367,45 +285,28 @@
       "display:none", "align-items:center", "justify-content:center", "padding:0",
       "backdrop-filter:blur(6px)",
     ].join(";");
-    btn.addEventListener("click", startPip, { passive: true });
+    btn.addEventListener("click", openPip, { passive: true });
     document.body.appendChild(btn);
     return btn;
-  }
-
-  function isPipOpen() {
-    try {
-      if (pipWin && !pipWin.closed) return true;
-      if (document.pictureInPictureElement) return true;
-    } catch (e) {}
-    return false;
   }
 
   function sync() {
     var a = document.querySelector("audio");
     var b = ensureBtn();
+    if (active && !pipOpen()) { active = false; stopHeartbeat(); }
+
     var playing = !!(a && !a.paused && (a.currentSrc || a.src));
-    var panel = document.querySelector(".player-layer-root .playBar, .playBar, .audio-player");
-    var panelVisible = false;
+    var panel = document.querySelector(".audio-player");
+    var vis = false;
     if (panel) {
       var cs = getComputedStyle(panel);
-      panelVisible = cs.display !== "none" && cs.visibility !== "hidden" && cs.opacity !== "0";
+      vis = cs.display !== "none" && cs.visibility !== "hidden";
     }
-    if (active && !isPipOpen()) { active = false; stopHeartbeat(); log("pip closed externally"); }
+    b.style.display = (playing && vis) ? "flex" : "none";
+    if (active) { b.style.background = "#027be3"; b.style.color = "#fff"; }
+    else { b.style.background = "rgba(255,255,255,.92)"; b.style.color = "#027be3"; }
 
-    var show = !!(playing && panelVisible);
-    b.style.display = show ? "flex" : "none";
-    if (active) {
-      b.style.background = "#027be3";
-      b.style.color = "#ffffff";
-    } else {
-      b.style.background = "rgba(255,255,255,.92)";
-      b.style.color = "#027be3";
-    }
     if (playing && a) loadSubs(a.currentSrc || a.src);
-    if (a && !a.dataset.pipTitle) {
-      a.dataset.pipTitle = "1";
-      a.addEventListener("loadedmetadata", function () { draw(lyricAt(a.currentTime) || trackLabel()); });
-    }
   }
 
   function boot() {
