@@ -1,5 +1,5 @@
 /* Kikoeru static replica: intercept /api/* and serve local JSON. Frontend unchanged. */
-const VERSION = "v19";
+const VERSION = "v20";
 const CACHE = "kikoeru-data-" + VERSION;
 const PRELOAD = [
   "data/shared.json",
@@ -155,6 +155,15 @@ async function handleApi(u, rawPath, ev) {
     return new Response("", { status: 404 });
   }
 
+  /* 字幕相关接口：本地没有就返回空，避免前端弹 Network Error */
+  if (p.startsWith("/api/media/check-lrc") || p.startsWith("/api/media/query-lrc") ||
+      p.startsWith("/api/media/fetch-lrc") || p.startsWith("/api/media/download-lyrics") ||
+      p.startsWith("/api/media/save-lrc") || p.startsWith("/api/media/check-lrc-status")) {
+    if (p.indexOf("check-lrc") > -1) {
+      return new Response(null, { status: 204 });
+    }
+    return jsonResp({ lrc: "", lyric: "", exists: false, success: true });
+  }
   if (p.startsWith("/api/media/")) {
     const d = await loadJson("data/shared.json");
     const base = (d && d.sharedConfig && d.sharedConfig.mediaFileBaseUrl) || "";
