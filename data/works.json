@@ -109,7 +109,8 @@
      "upvote": 0,
      "downvote": 0,
      "voteRank": 15,
-     "voteStatus": 1
+     "voteStatus": 1,
+     "myVote": 0
     },
     {
      "id": 122,
@@ -130,7 +131,8 @@
      "upvote": 0,
      "downvote": 0,
      "voteRank": 15,
-     "voteStatus": 1
+     "voteStatus": 1,
+     "myVote": 0
     },
     {
      "id": 182,
@@ -150,7 +152,8 @@
      "upvote": 0,
      "downvote": 0,
      "voteRank": 15,
-     "voteStatus": 1
+     "voteStatus": 1,
+     "myVote": 0
     },
     {
      "id": 448,
@@ -170,7 +173,8 @@
      "upvote": 0,
      "downvote": 0,
      "voteRank": 15,
-     "voteStatus": 1
+     "voteStatus": 1,
+     "myVote": 0
     },
     {
      "id": 496,
@@ -195,7 +199,8 @@
      "upvote": 0,
      "downvote": 0,
      "voteRank": 15,
-     "voteStatus": 1
+     "voteStatus": 1,
+     "myVote": 0
     },
     {
      "id": 497,
@@ -214,7 +219,8 @@
      "upvote": 0,
      "downvote": 0,
      "voteRank": 15,
-     "voteStatus": 1
+     "voteStatus": 1,
+     "myVote": 0
     },
     {
      "id": 528,
@@ -240,7 +246,8 @@
      "upvote": 0,
      "downvote": 0,
      "voteRank": 15,
-     "voteStatus": 1
+     "voteStatus": 1,
+     "myVote": 0
     },
     {
      "id": 504,
@@ -266,7 +273,8 @@
      "upvote": 1,
      "downvote": 0,
      "voteRank": 1,
-     "voteStatus": 0
+     "voteStatus": 0,
+     "myVote": 0
     },
     {
      "id": 523,
@@ -287,7 +295,8 @@
      "upvote": 1,
      "downvote": 0,
      "voteRank": 1,
-     "voteStatus": 0
+     "voteStatus": 0,
+     "myVote": 0
     }
    ],
    "language_editions": [
@@ -329,10 +338,11 @@
    "source_type": "DLSITE",
    "source_id": "RJ01114818",
    "source_url": "https://www.dlsite.com/maniax/work/=/product_id/RJ01114818.html",
-   "playlist_rel_created_at": "2026-11-08 13:22:57",
-   "playlist_rel_updated_at": "2026-11-08 13:22:57",
    "userRating": null,
    "review_text": null,
+   "progress": null,
+   "updated_at": null,
+   "user_name": null,
    "circle": {
     "id": 1004256,
     "name": "甘堕落",
@@ -341,7 +351,41 @@
    },
    "samCoverUrl": "https://api.asmr-200.com/api/cover/1114818.jpg?type=sam",
    "thumbnailCoverUrl": "https://api.asmr-200.com/api/cover/1114818.jpg?type=240x240",
-   "mainCoverUrl": "https://api.asmr-200.com/api/cover/1114818.jpg?type=main"
+   "mainCoverUrl": "https://api.asmr-200.com/api/cover/1114818.jpg?type=main",
+   "relatedWorks": [],
+   "tagIds": [
+    65,
+    122,
+    182,
+    448,
+    496,
+    497,
+    528,
+    504,
+    523
+   ],
+   "tagNames": [
+    "胸部/奶子",
+    "乳交",
+    "巨乳/爆乳",
+    "色诱",
+    "环绕音",
+    "ASMR",
+    "无本番",
+    "姐姐正太",
+    "乳头刺激"
+   ],
+   "vaIds": [
+    "7316d471-2ff7-5165-a786-483b36c4de9c",
+    "fcc9a08a-afcb-51c8-bad5-50c73b50e21b"
+   ],
+   "vaNames": [
+    "乙倉ゅい(乙倉由依)",
+    "逢坂成美"
+   ],
+   "memo": null,
+   "lyric_status": "",
+   "play_updated_at": null
   }
  ],
  "pagination": {
