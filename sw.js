@@ -1,5 +1,5 @@
 /* Kikoeru static replica: intercept /api/* and serve local JSON. Frontend unchanged. */
-const VERSION = "v26";
+const VERSION = "v27";
 const CACHE = "kikoeru-data-" + VERSION;
 const PRELOAD = [
   "data/shared.json",
@@ -169,6 +169,17 @@ async function handleApi(u, rawPath, ev) {
       } catch (e) { }
     }
     return null;
+  }
+
+  /* 歌词/AI 任务接口：静态站一律返回空结构，避免前端 map 报错 */
+  if (p.indexOf("/api/lyric/") === 0) {
+    if (p.indexOf("/work-status/") > -1 || p.indexOf("/search-task") > -1) {
+      return jsonResp({ tasks: [], total: 0 });
+    }
+    return jsonResp({ success: true, tasks: [] });
+  }
+  if (p.indexOf("/api/search-task") === 0) {
+    return jsonResp({ tasks: [], total: 0 });
   }
 
   if (p.indexOf("/api/media/fetch-lrc/") === 0) {
