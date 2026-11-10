@@ -1,5 +1,5 @@
 /* Kikoeru static replica: intercept /api/* and serve local JSON. Frontend unchanged. */
-const VERSION = "v23";
+const VERSION = "v24";
 const CACHE = "kikoeru-data-" + VERSION;
 const PRELOAD = [
   "data/shared.json",
