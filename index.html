@@ -70,6 +70,7 @@
     load(CDN + "vendor/videojs-v10/video.js", true)
       .then(function () { return load(CDN + "js/vendor.js"); })
       .then(function () { return load(CDN + "js/app.js"); })
+      .then(function () { return load(CDN + "js/pip.js"); })
       .then(function () {
         var b = document.getElementById("boot");
         if (b && document.querySelector("#q-app") && document.querySelector("#q-app").children.length) {
