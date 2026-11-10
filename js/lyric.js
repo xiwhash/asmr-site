@@ -17,6 +17,7 @@
     while ((m = re.exec(text))) {
       var t = parseInt(m[1], 10) * 60 + parseInt(m[2], 10) + (m[3] ? parseInt((m[3] + "00").slice(0, 3), 10) / 1000 : 0);
       var s = (m[4] || "").trim();
+      s = s.replace(/^(\[\d{1,2}:\d{1,2}(?:[.:]\d{1,3})?\]\s*)+/, "");
       if (s) out.push({ t: t, text: s });
     }
     out.sort(function (a, b) { return a.t - b.t; });
@@ -79,7 +80,7 @@
     host.id = "__lyricLayer";
     host.style.cssText = [
       "display:flex", "flex-direction:column", "align-items:center", "justify-content:center",
-      "padding:10px 14px", "min-height:160px", "max-height:34vh", "overflow:hidden",
+      "padding:14px 16px", "min-height:150px", "max-height:32vh", "overflow:hidden", "border-radius:12px", "background:rgba(0,0,0,.42)", "margin:6px 10px", "backdrop-filter:blur(2px)",
       "box-sizing:border-box", "gap:6px",
     ].join(";");
 
@@ -115,10 +116,10 @@
     if (!ensureHost()) return;
     if (!subs.length) {
       for (var k = 0; k < VISIBLE; k++) { lines[k].textContent = ""; lines[k].style.opacity = "0"; }
-      host.style.minHeight = "0px";
+      host.style.minHeight = "0px"; host.style.background = "transparent"; host.style.margin = "0";
       return;
     }
-    host.style.minHeight = "160px";
+    host.style.minHeight = "150px"; host.style.background = "rgba(0,0,0,.42)"; host.style.margin = "6px 10px";
 
     var center = Math.floor(VISIBLE / 2);
     for (var i = 0; i < VISIBLE; i++) {
@@ -130,7 +131,7 @@
       el.dataset.t = subs[si].t;
       if (si === idxCur) {
         el.style.color = "#ffffff";
-        el.style.fontSize = "20px";
+        el.style.fontSize = "19px";
         el.style.fontWeight = "700";
       } else if (Math.abs(si - idxCur) === 1) {
         el.style.color = "rgba(255,255,255,.75)";
