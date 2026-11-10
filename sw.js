@@ -1,5 +1,5 @@
 /* Kikoeru static replica: intercept /api/* and serve local JSON. Frontend unchanged. */
-const VERSION = "v22";
+const VERSION = "v23";
 const CACHE = "kikoeru-data-" + VERSION;
 const PRELOAD = [
   "data/shared.json",
@@ -155,15 +155,44 @@ async function handleApi(u, rawPath, ev) {
     return new Response("", { status: 404 });
   }
 
-  /* 字幕相关接口：本地没有就返回空，避免前端弹 Network Error */
-  if (p.startsWith("/api/media/check-lrc") || p.startsWith("/api/media/query-lrc") ||
-      p.startsWith("/api/media/fetch-lrc") || p.startsWith("/api/media/download-lyrics") ||
-      p.startsWith("/api/media/save-lrc") || p.startsWith("/api/media/check-lrc-status")) {
-    if (p.indexOf("check-lrc") > -1) {
-      return new Response(null, { status: 204 });
+  /* 字幕接口：读取本地 data/subs/<RJ>/<idx>.lrc */
+  async function loadLrcFor(rest) {
+    const m = String(rest || "").match(/^(RJ\d+)\/(\d+)/i);
+    if (!m) return null;
+    const rj = m[1].toUpperCase();
+    const idx = String(parseInt(m[2], 10)).padStart(3, "0");
+    const names = [idx + ".lrc", idx + ".vtt"];
+    for (let i = 0; i < names.length; i++) {
+      try {
+        const r = await fetch("data/subs/" + rj + "/" + names[i]);
+        if (r.ok) return { text: await r.text(), name: names[i] };
+      } catch (e) { }
     }
-    return jsonResp({ lrc: "", lyric: "", exists: false, success: true });
+    return null;
   }
+
+  if (p.indexOf("/api/media/fetch-lrc/") === 0) {
+    const hit = await loadLrcFor(p.slice("/api/media/fetch-lrc/".length));
+    return jsonResp({ lrc: hit ? hit.text : "" });
+  }
+
+  if (p.indexOf("/api/media/query-lrc/") === 0) {
+    const hit = await loadLrcFor(p.slice("/api/media/query-lrc/".length));
+    if (!hit) return jsonResp({ lyricList: [] });
+    return jsonResp({ lyricList: [{ name: hit.name, content: hit.text, lrc: hit.text }] });
+  }
+
+  if (p.indexOf("/api/media/check-lrc") === 0) {
+    const rest = p.replace(/^\/api\/media\/check-lrc(-status)?\//, "");
+    const hit = await loadLrcFor(rest);
+    if (!hit) return new Response(null, { status: 204 });
+    return jsonResp({ exists: true, name: hit.name });
+  }
+
+  if (p.indexOf("/api/media/download-lyrics") === 0 || p.indexOf("/api/media/save-lrc") === 0) {
+    return jsonResp({ success: true });
+  }
+
   if (p.startsWith("/api/media/")) {
     const d = await loadJson("data/shared.json");
     const base = (d && d.sharedConfig && d.sharedConfig.mediaFileBaseUrl) || "";
